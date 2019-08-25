@@ -1,5 +1,7 @@
+from scripts.types.HostOrIPAddress import HostOrIPAddress
 import click
 import click_log
+import geoip2.database
 import glob
 import logging
 import os
@@ -14,13 +16,16 @@ logger = logging.getLogger(__name__)
 click_log.basic_config(logger)
 
 supported_dbs = ['city', 'country', 'asn']
+HOST_OR_IP = HostOrIPAddress()
 
 
 @click.group()
 @click_log.simple_verbosity_option(logger)
 @click.pass_context
 def cli(ctx):
-    ctx = None
+    conf = dict()
+    conf['db_path'] = os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)), 'db')
+    ctx.obj = conf
 
 
 def maxmind_geoip2_filename_url(database):
@@ -79,3 +84,22 @@ def geoip(databases):
                     shutil.move(db, os.path.join('db', filename))
             except IOError:
                 logger.error('Downloading failed: %s', database)
+
+
+@cli.command()
+@click.pass_context
+@click_log.simple_verbosity_option(logger)
+@click.argument('host', type=HOST_OR_IP)
+@click.option('--database', '-d',  multiple=False,
+              type=click.Choice(supported_dbs),
+              is_flag=False,
+              default='city',
+              expose_value=True,
+              is_eager=True)
+# def lookup(database, ip):
+def lookup(ctx, database, host):
+    filename, _ = maxmind_geoip2_filename_url(database)
+    if filename:
+        reader = geoip2.database.Reader(os.path.join(ctx.obj['db_path'], filename))
+        result = getattr(reader, database)(host)
+        click.echo("(%f, %f)" % (result.location.latitude, result.location.longitude))
