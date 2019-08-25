@@ -74,6 +74,8 @@ def geoip(databases):
                         with tarfile.open(temp, "r:gz") as so:
                             so.extractall(path=target)
                     db = glob.glob(os.path.join(target, '**', filename)).pop()
+                    if not os.path.exists('db'):
+                        os.makedirs('db')
                     shutil.move(db, os.path.join('db', filename))
             except IOError:
                 logger.error('Downloading failed: %s', database)
