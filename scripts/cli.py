@@ -69,7 +69,7 @@ def geoip(databases):
                     logger.info('Extracting: %s', database)
                     target = tempfile.mkdtemp()
                     if sys.version_info >= (3, 0):
-                        shutil.unpack_archive(temp, '.')
+                        shutil.unpack_archive(temp, target)
                     else:
                         with tarfile.open(temp, "r:gz") as so:
                             so.extractall(path=target)
