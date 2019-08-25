@@ -1,4 +1,4 @@
 click
 click-log
 geoip2
-ipaddress
+netaddr
