@@ -14,7 +14,7 @@ install:
         fi
     - pip install tox-travis coveralls
 script:
-    - tox
+    - pytest --cov --cov-append --cov-report=term-missing -v
 
 after_success:
     - coveralls
